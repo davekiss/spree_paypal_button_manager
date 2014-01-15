@@ -3,8 +3,8 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_paypal_button_manager'
   s.version     = '2.1.3'
-  s.summary     = 'TODO: Add gem summary here'
-  s.description = 'TODO: Add (optional) gem description here'
+  s.summary     = 'Adds PayPal Button Manager as a Payment Method to Spree Commerce'
+  s.description = s.summary
   s.required_ruby_version = '>= 1.9.3'
 
   s.author    = 'Dave Kiss'
