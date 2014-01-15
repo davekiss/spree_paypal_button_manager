@@ -5,13 +5,18 @@ module SpreePaypalButtonManager
       class_option :auto_run_migrations, :type => :boolean, :default => false
 
       def add_javascripts
-        append_file 'app/assets/javascripts/spree/frontend/all.js', "//= require spree/frontent/spree_paypal_button_manager\n"
-        append_file 'app/assets/javascripts/spree/backend/all.js', "//= require spree/backend/spree_paypal_button_manager\n"
+        append_file 'vendor/assets/javascripts/spree/frontend/all.js', "//= require spree/frontent/spree_paypal_button_manager\n"
+        append_file 'vendor/assets/javascripts/spree/backend/all.js', "//= require spree/backend/spree_paypal_button_manager\n"
       end
 
       def add_stylesheets
-        inject_into_file 'app/assets/stylesheets/spree/frontend/all.css', " *= require spree/frontend/spree_paypal_button_manager\n", :before => /\*\//, :verbose => true
-        inject_into_file 'app/assets/stylesheets/spree/backend/all.css', " *= require spree/backend/spree_paypal_button_manager\n", :before => /\*\//, :verbose => true
+        frontend_css_file = "vendor/assets/stylesheets/spree/frontend/all.css"
+        backend_css_file = "vendor/assets/stylesheets/spree/backend/all.css"
+
+        if File.exist?(backend_css_file) && File.exist?(frontend_css_file)
+          inject_into_file frontend_css_file, " *= require spree/frontend/spree_paypal_button_manager\n", :before => /\*\//, :verbose => true
+          inject_into_file backend_css_file, " *= require spree/backend/spree_paypal_button_manager\n", :before => /\*\//, :verbose => true
+        end
       end
 
       def add_migrations
