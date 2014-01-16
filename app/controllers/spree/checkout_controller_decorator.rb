@@ -1,22 +1,6 @@
 Spree::CheckoutController.class_eval do
 
   def paypal_button
-
-    body = "mc_gross=151.11&protection_eligibility=Ineligible&payer_id=XNJKH2AHQVA6E&tax=13.11&payment_date=15%3A03%3A30+Jan+16%2C+2014+PST&payment_status=Completed&charset=windows-1252&first_name=Edward&mc_fee=4.68&notify_version=3.7&custom=R370140155&payer_status=verified&business=nick-facilitator%40greyscalegorilla.com&quantity=1&verify_sign=AFcWxV21C7fd0v3bYYYRCpSSRl31AWJTqWotBk7xsVLikQjispwHKqIw&payer_email=customer%40greyscalegorilla.com&txn_id=66810255SX5173730&payment_type=instant&last_name=Shitman&receiver_email=nick-facilitator%40greyscalegorilla.com&payment_fee=4.68&receiver_id=3X3A4MUBZH6ZS&txn_type=web_accept&item_name=Greyscalegorilla+Purchase&mc_currency=USD&item_number=&residence_country=US&test_ipn=1&handling_amount=0.00&transaction_subject=R370140155&payment_gross=151.11&shipping=0.00&ipn_track_id=7ae77f30c834d"
-
-    @api = ::PayPal::SDK::Merchant.new
-    if @api.ipn_valid?(body)  # return true or false
-      # params contains the data
-      # check that paymentStatus=Completed
-      # check that txnId has not been previously processed
-      # check that receiverEmail is your Primary PayPal email
-      # check that paymentAmount/paymentCurrency are correct
-      # process payment
-      binding.pry
-    else
-      # log for inspection
-    end
-
     create_button
   end
 

@@ -23,9 +23,8 @@ module Spree
     end
 
     def notify
-      @api = PayPal::SDK::Merchant.new
-      if @api.ipn_valid?(request.raw_post)  # return true or false
-        # params contains the data
+      if provider.ipn_valid?(request.raw_post)  # return true or false
+        # params contains the data - https://gist.github.com/davekiss/9aabb1ae3bda1ce6d9da
         # check that paymentStatus=Completed
         # check that txnId has not been previously processed
         # check that receiverEmail is your Primary PayPal email
