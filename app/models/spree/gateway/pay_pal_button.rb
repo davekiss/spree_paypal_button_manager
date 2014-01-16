@@ -28,7 +28,7 @@ module Spree
     end
 
     def method_type
-      'paypal'
+      'paypal_button'
     end
 
     def purchase(amount, express_checkout, gateway_options={})

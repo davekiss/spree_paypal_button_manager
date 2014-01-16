@@ -5,7 +5,7 @@ module SpreePaypalButtonManager
       class_option :auto_run_migrations, :type => :boolean, :default => false
 
       def add_javascripts
-        append_file 'vendor/assets/javascripts/spree/frontend/all.js', "//= require spree/frontent/spree_paypal_button_manager\n"
+        append_file 'vendor/assets/javascripts/spree/frontend/all.js', "//= require spree/frontend/spree_paypal_button_manager\n"
         append_file 'vendor/assets/javascripts/spree/backend/all.js', "//= require spree/backend/spree_paypal_button_manager\n"
       end
 
