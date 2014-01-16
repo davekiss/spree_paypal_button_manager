@@ -22,15 +22,30 @@ module Spree
       end
     end
 
+    def notify
+      @api = PayPal::SDK::Merchant.new
+      if @api.ipn_valid?(request.raw_post)  # return true or false
+        # params contains the data
+        # check that paymentStatus=Completed
+        # check that txnId has not been previously processed
+        # check that receiverEmail is your Primary PayPal email
+        # check that paymentAmount/paymentCurrency are correct
+        # process payment
+      else
+        # log for inspection
+      end
+      render :nothing => true
+    end
+
     def cancel
-      flash[:notice] = "Don't want to use PayPal? No problems."
+      flash[:notice] = "Don't want to use PayPal? No problem."
       redirect_to checkout_state_path(current_order.state)
     end
 
     private
 
       def payment_method
-        Spree::PaymentMethod.find_by!(name: "PayPal Express")
+        Spree::PaymentMethod.find_by!(type: "Spree::Gateway::PayPalButton")
       end
 
       def provider
