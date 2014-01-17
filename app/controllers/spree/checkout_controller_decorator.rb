@@ -7,11 +7,11 @@ Spree::CheckoutController.class_eval do
   private
     def create_button
       pp_request = provider.build_bm_create_button({
-        :ButtonType => "BUYNOW",
-        :ButtonCode => "ENCRYPTED",
-        :ButtonSubType => "PRODUCTS",
-        :ButtonSource => "Vimeography_SP",
-        :ButtonCountry => "US",
+        :ButtonType     => "BUYNOW",
+        :ButtonCode     => "ENCRYPTED",
+        :ButtonSubType  => "PRODUCTS",
+        :ButtonSource   => "Vimeography_SP",
+        :ButtonCountry  => "US",
         :ButtonImageURL => "https://www.paypalobjects.com/webstatic/mktg/merchant/images/express-checkout-hero.png",
         :ButtonVar  => [
           "return=" + confirm_paypal_url(:payment_method_id => payment_method.id, :utm_nooverride => 1),
@@ -32,7 +32,7 @@ Spree::CheckoutController.class_eval do
       begin
         pp_response = provider.bm_create_button(pp_request)
         if pp_response.success?
-          return pp_response.Email
+          return pp_response.Website
         else
           flash[:error] = "PayPal failed. #{pp_response.errors.map(&:long_message).join(" ")}"
         end

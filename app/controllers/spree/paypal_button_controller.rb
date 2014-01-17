@@ -2,21 +2,11 @@ module Spree
   class PaypalButtonController < StoreController
 
     def confirm
-      binding.pry
       order = current_order
-      order.payments.create!({
-        :source => Spree::PaypalExpressCheckout.create({
-          :token => params[:token],
-          :payer_id => params[:PayerID]
-        }),
-        :amount => order.total,
-        :payment_method => payment_method
-      })
-      order.next
       if order.complete?
         flash.notice = Spree.t(:order_processed_successfully)
         flash[:commerce_tracking] = "nothing special"
-        redirect_to order_path(order, :token => order.token)
+        redirect_to order_path(order)
       else
         redirect_to checkout_state_path(order.state)
       end
@@ -24,12 +14,22 @@ module Spree
 
     def notify
       if provider.ipn_valid?(request.raw_post)  # return true or false
-        # params contains the data - https://gist.github.com/davekiss/9aabb1ae3bda1ce6d9da
-        # check that paymentStatus=Completed
-        # check that txnId has not been previously processed
-        # check that receiverEmail is your Primary PayPal email
-        # check that paymentAmount/paymentCurrency are correct
-        # process payment
+
+        @order = Spree::Order.find_by(order_number: ipn_params[:custom])
+
+        if payment_is_valid?
+          @order.email = ipn_params[:payer_email]
+          @order.payments.create!({
+            source: Spree::PaypalButtonCheckout.create({
+              token: ipn_params[:txn_id],
+              transaction_id: ipn_params[:txn_id]
+              payer_id: ipn_params[:payer_id]
+            }),
+            amount: @order.total,
+            payment_method: payment_method
+          })
+          @order.next
+        end
       else
         # log for inspection
       end
@@ -49,6 +49,32 @@ module Spree
 
       def provider
         payment_method.provider
+      end
+
+      def ipn_params
+        # https://gist.github.com/davekiss/9aabb1ae3bda1ce6d9da
+        params.permit(:payment_status, :payment_gross, :receiver_email, :payer_email, :mc_currency, :tax, :payer_id, :txn_id, :custom)
+      end
+
+      def payment_is_valid?
+        # @todo: check that txnId has not been previously processed
+        is_completed? && is_correct_amount? && is_correct_business? && is_corrent_currency?
+      end
+
+      def is_completed?
+        ipn_params[:payment_status] == "Completed"
+      end
+
+      def is_correct_amount?
+        ipn_params[:payment_gross] - ipn_params[:tax] == @order.total
+      end
+
+      def is_correct_business?
+        ipn_params[:receiver_email] == 'nick-facilitator@greyscalegorilla.com'
+      end
+
+      def is_corrent_currency?
+        ipn_params[:mc_currency] == "USD"
       end
 
   end
