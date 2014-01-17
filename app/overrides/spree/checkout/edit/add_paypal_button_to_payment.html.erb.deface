@@ -1,0 +1,4 @@
+<!-- insert_top "[data-hook='checkout_form_wrapper']" -->
+<% if @order.state == 'payment' %>
+  Paypal button goes here
+<% end %>
