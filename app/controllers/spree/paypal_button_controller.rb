@@ -22,7 +22,7 @@ module Spree
           @order.payments.create!({
             source: Spree::PaypalButtonCheckout.create({
               token: ipn_params[:txn_id],
-              transaction_id: ipn_params[:txn_id]
+              transaction_id: ipn_params[:txn_id],
               payer_id: ipn_params[:payer_id]
             }),
             amount: @order.total,
