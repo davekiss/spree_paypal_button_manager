@@ -21,7 +21,6 @@ module Spree
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
             source: Spree::PaypalButtonCheckout.create({
-              token: ipn_params[:txn_id],
               transaction_id: ipn_params[:txn_id],
               payer_id: ipn_params[:payer_id]
             }),
@@ -32,6 +31,8 @@ module Spree
         end
       else
         # log for inspection
+        logger.debug "Raw request for invalid IPN: #{request.raw_post}"
+        logger.debug "Order: #{@order.inspect}"
       end
       render :nothing => true
     end
@@ -58,7 +59,7 @@ module Spree
 
       def payment_is_valid?
         # @todo: check that txnId has not been previously processed
-        is_completed? && is_correct_amount? && is_correct_business? && is_corrent_currency?
+        is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
       end
 
       def is_completed?
@@ -73,7 +74,7 @@ module Spree
         ipn_params[:receiver_email] == 'nick-facilitator@greyscalegorilla.com'
       end
 
-      def is_corrent_currency?
+      def is_correct_currency?
         ipn_params[:mc_currency] == "USD"
       end
 
