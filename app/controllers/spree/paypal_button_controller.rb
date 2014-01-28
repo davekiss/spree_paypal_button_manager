@@ -13,7 +13,7 @@ module Spree
     end
 
     def notify
-      binding.pry
+      logger.info "Heroku logging enabled"
       if provider.ipn_valid?(request.raw_post)  # return true or false
 
         @order = Spree::Order.find_by(order_number: ipn_params[:custom])
