@@ -1,5 +1,6 @@
 module Spree
   class PaypalButtonController < StoreController
+    skip_before_action :verify_authenticity_token, only: [:notify]
 
     def confirm
       order = current_order
@@ -23,7 +24,7 @@ module Spree
         logger.info "Order is #{@order.inspect}"
         if payment_is_valid?
           logger.info "Payment is valid"
-          
+
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
             source: Spree::PaypalButtonCheckout.create({
