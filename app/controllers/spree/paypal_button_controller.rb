@@ -14,11 +14,16 @@ module Spree
 
     def notify
       logger.info "Heroku logging enabled"
+      logger.info "Request post: #{request.raw_post.inspect}"
       if provider.ipn_valid?(request.raw_post)  # return true or false
+        logger.info "IPN is valid"
+        logger.info "IPN Params: #{ipn_params.inspect}"
 
         @order = Spree::Order.find_by(order_number: ipn_params[:custom])
-
+        logger.info "Order is #{@order.inspect}"
         if payment_is_valid?
+          logger.info "Payment is valid"
+          
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
             source: Spree::PaypalButtonCheckout.create({
@@ -32,8 +37,8 @@ module Spree
         end
       else
         # log for inspection
-        logger.debug "Raw request for invalid IPN: #{request.raw_post}"
-        logger.debug "Order: #{@order.inspect}"
+        logger.info "Raw request for invalid IPN: #{request.raw_post.inspect}"
+        logger.info "Order: #{@order.inspect}"
       end
       render :nothing => true
     end
@@ -61,6 +66,10 @@ module Spree
       def payment_is_valid?
         # @todo: check that txnId has not been previously processed
         is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
+        logger.info "Is completed? #{is_completed?}"
+        logger.info "Is is_correct_amount? #{is_correct_amount?}"
+        logger.info "Is is_correct_business? #{is_correct_business?}"
+        logger.info "Is is_correct_currency? #{is_correct_currency?}"
       end
 
       def is_completed?
