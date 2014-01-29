@@ -3,11 +3,11 @@ module Spree
     skip_before_action :verify_authenticity_token
 
     def confirm
-      order = current_order
+      order = Spree::Order.find_by!(number: ipn_params[:custom])
       if order.complete?
         flash.notice = Spree.t(:order_processed_successfully)
         flash[:commerce_tracking] = "nothing special"
-        redirect_to order_path(order)
+        redirect_to order_path(order, :token => order.token)
       else
         redirect_to checkout_state_path(order.state)
       end
