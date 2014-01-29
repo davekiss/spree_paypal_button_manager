@@ -20,7 +20,7 @@ module Spree
         logger.info "IPN is valid"
         logger.info "IPN Params: #{ipn_params.inspect}"
 
-        @order = Spree::Order.find_by(order_number: ipn_params[:custom])
+        @order = Spree::Order.find_by!(number: ipn_params[:custom])
         logger.info "Order is #{@order.inspect}"
         if payment_is_valid?
           logger.info "Payment is valid"
