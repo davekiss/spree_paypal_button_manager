@@ -1,6 +1,6 @@
 module Spree
   class PaypalButtonController < StoreController
-    skip_before_action :verify_authenticity_token, only: [:notify]
+    skip_before_action :verify_authenticity_token
 
     def confirm
       order = current_order
