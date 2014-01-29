@@ -1,6 +1,6 @@
 Spree::Core::Engine.add_routes do
   post '/paypal', :to => "paypal_button#button", :as => :paypal_button
-  get '/paypal/confirm', :to => "paypal_button#confirm", :as => :confirm_paypal
+  post '/paypal/confirm', :to => "paypal_button#confirm", :as => :confirm_paypal
   get '/paypal/cancel', :to => "paypal_button#cancel", :as => :cancel_paypal
   post '/paypal/notify', :to => "paypal_button#notify", :as => :notify_paypal
 
