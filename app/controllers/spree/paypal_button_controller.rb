@@ -14,31 +14,17 @@ module Spree
     end
 
     def notify
-      logger.info "Heroku logging enabled"
-      logger.info "Request post: #{request.raw_post.inspect}"
+      logger.info "Raw Request: #{request.raw_post.inspect}"
+
       if provider.ipn_valid?(request.raw_post)  # return true or false
-        logger.info "IPN is valid"
         logger.info "IPN Params: #{ipn_params.inspect}"
 
+        # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
         logger.info "Order is #{@order.inspect}"
+
         if payment_is_valid?
-          logger.info "Payment is valid, getting txn address"
-
-          # Build request object
-          pp_request = merchant.build_get_transaction_details({
-            :TransactionID => '8A050397N97520443' })
-
-          begin
-            pp_response = merchant.get_transaction_details(pp_request)
-            if pp_response.success?
-              logger.info "Payment TXN Details: #{pp_response.PaymentTransactionDetails.inspect}"
-              logger.info "ThreeDSecureDetails: #{pp_response.ThreeDSecureDetails.inspect}"
-            else
-              logger.info "TXN Errors: #{pp_response.Errors.inspect}"
-            end
-          rescue SocketError
-          end
+          create_tax_adjustment if ipn_params[:tax] != "0.00"
 
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
@@ -53,9 +39,9 @@ module Spree
         end
       else
         # log for inspection
-        logger.info "Raw request for invalid IPN: #{request.raw_post.inspect}"
-        logger.info "Order: #{@order.inspect}"
+        logger.info "Invalid IPN for Order: #{@order.inspect}"
       end
+      
       render :nothing => true
     end
 
@@ -87,9 +73,9 @@ module Spree
         # @todo: check that txnId has not been previously processed
         is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
         logger.info "Is completed? #{is_completed?}"
-        logger.info "Is is_correct_amount? #{is_correct_amount?}"
-        logger.info "Is is_correct_business? #{is_correct_business?}"
-        logger.info "Is is_correct_currency? #{is_correct_currency?}"
+        logger.info "is_correct_amount? #{is_correct_amount?}"
+        logger.info "is_correct_business? #{is_correct_business?}"
+        logger.info "is_correct_currency? #{is_correct_currency?}"
       end
 
       def is_completed?
@@ -106,6 +92,36 @@ module Spree
 
       def is_correct_currency?
         ipn_params[:mc_currency] == "USD"
+      end
+
+      def create_tax_adjustment
+        pp_request = merchant.build_get_transaction_details({
+          :TransactionID => ipn_params[:txn_id] })
+
+        begin
+          @pp_response = merchant.get_transaction_details(pp_request)
+          if @pp_response.success?
+            logger.info "Payment TXN Details: #{@pp_response.PaymentTransactionDetails.inspect}"
+            payer_address = @pp_response.PaymentTransactionDetails.PayerInfo.Address
+            payer_name    = @pp_response.PaymentTransactionDetails.PayerInfo.PayerName
+
+            bill_address  = @order.build_bill_address({
+              city:      payer_address.try(:CityName), 
+              state:     Spree::State.find_by!(abbr: "IL"),
+              zipcode:   payer_address.try(:PostalCode), 
+              country:   Spree::Country.find_by!(iso: "US"),
+              firstname: payer_name.try(:FirstName),
+              lastname:  payer_name.try(:LastName),
+              address1:  payer_address.try(:Street1)
+            })
+
+            create_tax_charge! if bill_address.valid?
+            logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
+          else
+            logger.info "TXN Errors: #{@pp_response.Errors.inspect}"
+          end
+        rescue SocketError
+        end
       end
 
   end
