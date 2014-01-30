@@ -23,7 +23,22 @@ module Spree
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
         logger.info "Order is #{@order.inspect}"
         if payment_is_valid?
-          logger.info "Payment is valid"
+          logger.info "Payment is valid, getting txn address"
+
+          # Build request object
+          pp_request = provider.build_get_transaction_details({
+            :TransactionID => ipn_params[:txn_id] })
+
+          begin
+            pp_response = provider.get_transaction_details(pp_request)
+            if pp_response.success?
+              logger.info "Payment TXN Details: #{pp_response.PaymentTransactionDetails.inspect}"
+              logger.info "ThreeDSecureDetails: #{pp_response.ThreeDSecureDetails.inspect}"
+            else
+              logger.info "TXN Errors: #{pp_response.Errors.inspect}"
+            end
+          rescue SocketError
+          end
 
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
