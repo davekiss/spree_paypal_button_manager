@@ -1,4 +1,4 @@
-require 'paypal-sdk-buttonmanager'
+require 'paypal-sdk-merchant'
 module Spree
   class Gateway::PayPalButton < Gateway
     preference :login, :string
@@ -11,7 +11,7 @@ module Spree
     end
 
     def provider_class
-      ::PayPal::SDK::ButtonManager::API
+      ::PayPal::SDK::Merchant::API
     end
 
     def provider
