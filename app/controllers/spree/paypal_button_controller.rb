@@ -105,8 +105,10 @@ module Spree
             payer_address = @pp_response.PaymentTransactionDetails.PayerInfo.Address
             payer_name    = @pp_response.PaymentTransactionDetails.PayerInfo.PayerName
 
-            begin
-              @order.create_bill_address!({
+            # Ugly, but can't validate with AR due to rollbacks on the entire order
+            if payer_address.CityName.presence && payer_address.PostalCode.presence && payer_address.Street1.prescense && payer_name.FirstName.presence && payer_name.LastName.presence
+
+              @order.build_bill_address({
                 city:      payer_address.try(:CityName), 
                 state:     Spree::State.find_by!(abbr: "IL"),
                 zipcode:   payer_address.try(:PostalCode), 
@@ -118,9 +120,10 @@ module Spree
 
               create_tax_charge!
               logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
-            rescue ActiveRecord::RecordInvalid
+            else
               logger.info "Invalid address - no adjustment applied"
             end
+
           else
             logger.info "TXN Errors: #{@pp_response.Errors.inspect}"
           end
