@@ -25,7 +25,7 @@ module Spree
         if payment_is_valid?
           logger.info "Payment is valid, getting txn address"
 
-          api = Spree::Gateway::PayPayButton.merchant
+          api = Spree::Gateway::PayPalButton.merchant
 
           # Build request object
           pp_request = api.build_get_transaction_details({
