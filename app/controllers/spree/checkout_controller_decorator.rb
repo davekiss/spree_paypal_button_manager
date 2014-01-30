@@ -10,7 +10,6 @@ Spree::CheckoutController.class_eval do
         :ButtonType     => "BUYNOW",
         :ButtonCode     => "ENCRYPTED",
         :ButtonSubType  => "PRODUCTS",
-        :ButtonSource   => "Vimeography_SP",
         :ButtonCountry  => "US",
         :ButtonImageURL => "https://www.paypalobjects.com/webstatic/mktg/merchant/images/express-checkout-hero.png",
         :ButtonVar  => [
