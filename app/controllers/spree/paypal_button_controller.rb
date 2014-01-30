@@ -41,7 +41,7 @@ module Spree
         # log for inspection
         logger.info "Invalid IPN for Order: #{@order.inspect}"
       end
-      
+
       render :nothing => true
     end
 
@@ -105,18 +105,22 @@ module Spree
             payer_address = @pp_response.PaymentTransactionDetails.PayerInfo.Address
             payer_name    = @pp_response.PaymentTransactionDetails.PayerInfo.PayerName
 
-            bill_address  = @order.build_bill_address({
-              city:      payer_address.try(:CityName), 
-              state:     Spree::State.find_by!(abbr: "IL"),
-              zipcode:   payer_address.try(:PostalCode), 
-              country:   Spree::Country.find_by!(iso: "US"),
-              firstname: payer_name.try(:FirstName),
-              lastname:  payer_name.try(:LastName),
-              address1:  payer_address.try(:Street1)
-            })
+            begin
+              @order.create_bill_address!({
+                city:      payer_address.try(:CityName), 
+                state:     Spree::State.find_by!(abbr: "IL"),
+                zipcode:   payer_address.try(:PostalCode), 
+                country:   Spree::Country.find_by!(iso: "US"),
+                firstname: payer_name.try(:FirstName),
+                lastname:  payer_name.try(:LastName),
+                address1:  payer_address.try(:Street1)
+              })
 
-            create_tax_charge! if bill_address.valid?
-            logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
+              create_tax_charge!
+              logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
+            rescue ActiveRecord::RecordInvalid
+              logger.info "Invalid address - no adjustment applied"
+            end
           else
             logger.info "TXN Errors: #{@pp_response.Errors.inspect}"
           end
