@@ -1,3 +1,4 @@
+require 'paypal-sdk-merchant'
 require 'paypal-sdk-buttonmanager'
 module Spree
   class Gateway::PayPalButton < Gateway
@@ -14,13 +15,26 @@ module Spree
       ::PayPal::SDK::ButtonManager::API
     end
 
+    def merchant_class
+      ::PayPal::SDK::Merchant::API
+    end
+
     def provider
+      configure
+      provider_class.new
+    end
+
+    def merchant
+      configure
+      merchant_class.new
+    end
+
+    def configure
       ::PayPal::SDK.configure(
         :mode      => preferred_server.present? ? preferred_server : "sandbox",
         :username  => preferred_login,
         :password  => preferred_password,
         :signature => preferred_signature)
-      provider_class.new
     end
 
     def auto_capture?

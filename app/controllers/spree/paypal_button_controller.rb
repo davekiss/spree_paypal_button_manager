@@ -25,12 +25,14 @@ module Spree
         if payment_is_valid?
           logger.info "Payment is valid, getting txn address"
 
+          api = Spree::Gateway::PayPayButton.merchant
+
           # Build request object
-          pp_request = provider.build_get_transaction_details({
+          pp_request = api.build_get_transaction_details({
             :TransactionID => ipn_params[:txn_id] })
 
           begin
-            pp_response = provider.get_transaction_details(pp_request)
+            pp_response = api.get_transaction_details(pp_request)
             if pp_response.success?
               logger.info "Payment TXN Details: #{pp_response.PaymentTransactionDetails.inspect}"
               logger.info "ThreeDSecureDetails: #{pp_response.ThreeDSecureDetails.inspect}"
