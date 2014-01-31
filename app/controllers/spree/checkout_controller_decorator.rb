@@ -23,7 +23,7 @@ Spree::CheckoutController.class_eval do
           "nonote=1",
           "bn=Vimeography_SP",
           "charset=utf-8",
-          "no_shipping=1",
+          "no_shipping=2",
           "address_override=0",
           "custom=#{current_order.number}"
         ]
