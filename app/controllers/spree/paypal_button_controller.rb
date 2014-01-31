@@ -106,7 +106,7 @@ module Spree
             payer_name    = @pp_response.PaymentTransactionDetails.PayerInfo.PayerName
 
             # Ugly, but can't validate with AR due to rollbacks on the entire order
-            if payer_address.CityName.presence && payer_address.PostalCode.presence && payer_address.Street1.prescense && payer_name.FirstName.presence && payer_name.LastName.presence
+            if payer_address.CityName.presence && payer_address.PostalCode.presence && payer_address.Street1.presence && payer_name.FirstName.presence && payer_name.LastName.presence
 
               @order.build_bill_address({
                 city:      payer_address.try(:CityName), 
