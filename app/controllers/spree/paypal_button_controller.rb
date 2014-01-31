@@ -118,7 +118,7 @@ module Spree
                 address1:  payer_address.try(:Street1)
               })
 
-              create_tax_charge!
+              @order.create_tax_charge!
               logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
             else
               logger.info "Invalid address - no adjustment applied"
