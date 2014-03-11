@@ -1,4 +1,4 @@
-<!-- insert_top "[data-hook='checkout_form_wrapper']" -->
+<!-- insert_bottom "[data-hook='checkout_summary_box']" -->
 <% if @order.state == 'payment' %>
   <%= paypal_button.html_safe %>
 <% end %>
