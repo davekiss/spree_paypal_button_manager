@@ -4,7 +4,8 @@ module Spree
 
     def confirm
       order = Spree::Order.find_by!(number: ipn_params[:custom])
-      if order.complete?
+      if order.completed?
+        session[:order_id] = nil
         flash.notice = Spree.t(:order_processed_successfully)
         flash[:commerce_tracking] = "nothing special"
         redirect_to order_path(order, :token => order.token)
