@@ -72,11 +72,11 @@ module Spree
 
       def payment_is_valid?
         # @todo: check that txnId has not been previously processed
-        is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
         logger.info "Is completed? #{is_completed?}"
         logger.info "is_correct_amount? #{is_correct_amount?}"
         logger.info "is_correct_business? #{is_correct_business?}"
         logger.info "is_correct_currency? #{is_correct_currency?}"
+        is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
       end
 
       def is_completed?
@@ -88,7 +88,7 @@ module Spree
       end
 
       def is_correct_business?
-        ipn_params[:receiver_email] == 'nick-facilitator@greyscalegorilla.com'
+        ipn_params[:receiver_email] == 'nick@greyscalegorilla.com'
       end
 
       def is_correct_currency?
