@@ -7,9 +7,6 @@
         <dt><%= Spree.t(:payer_id, :scope => :paypal) %>:</dt>
         <dd><%= payment.source.payer_id %></dd>
 
-        <dt><%= Spree.t(:token, :scope => :paypal) %>:</dt>
-        <dd><%= payment.source.token %></dd>
-
         <dt><%= Spree.t(:transaction_id) %>:</dt>
         <dd><%= payment.source.transaction_id %></dd>
       </dl>
