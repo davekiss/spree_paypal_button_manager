@@ -145,6 +145,7 @@ module Spree
 
         @order.build_bill_address(address) unless has_blank? address
         logger.info "Blank in Address???: #{has_blank?(address)}"
+        logger.info "Bill Address: #{@order.bill_address.inspect}"
       end
 
       def has_blank? address
