@@ -105,7 +105,11 @@ module Spree
       end
 
       def is_correct_business?
-        ipn_params[:receiver_email] == 'nick@greyscalegorilla.com'
+        if Rails.env.production?
+          ipn_params[:receiver_email] == 'nick@greyscalegorilla.com'
+        else
+          ipn_params[:receiver_email] == 'nick-facilitator@greyscalegorilla.com'
+        end
       end
 
       def is_correct_currency?
