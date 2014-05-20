@@ -24,7 +24,6 @@ module Spree
         if payment_is_valid?
           add_bill_address_from_ipn
           @order.create_tax_charge! if eligible_for_tax_charge?
-          @order.update_totals
 
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
