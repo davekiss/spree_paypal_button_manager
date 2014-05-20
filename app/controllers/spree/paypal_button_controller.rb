@@ -15,8 +15,9 @@ module Spree
     end
 
     def notify
+      logger.info "Raw Request: #{request.raw_post.inspect}"
       if provider.ipn_valid?(request.raw_post)
-
+        logger.info "IPN Params: #{ipn_params.inspect}"
         # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
 
