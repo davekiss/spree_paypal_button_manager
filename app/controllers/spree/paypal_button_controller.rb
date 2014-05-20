@@ -15,17 +15,15 @@ module Spree
     end
 
     def notify
-      logger.info "Raw Request: #{request.raw_post.inspect}"
-
-      if provider.ipn_valid?(request.raw_post)  # return true or false
-        logger.info "IPN Params: #{ipn_params.inspect}"
+      if provider.ipn_valid?(request.raw_post)
 
         # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
-        logger.info "Order is #{@order.inspect}"
 
         if payment_is_valid?
-          create_tax_adjustment if ipn_params[:tax] != "0.00"
+          add_bill_address_from_ipn
+          @order.create_tax_charge! if eligible_for_tax_charge?
+          @order.update_totals
 
           @order.email = ipn_params[:payer_email]
           @order.payments.create!({
@@ -67,7 +65,25 @@ module Spree
 
       def ipn_params
         # https://gist.github.com/davekiss/9aabb1ae3bda1ce6d9da
-        params.permit(:payment_status, :payment_gross, :receiver_email, :payer_email, :mc_currency, :tax, :payer_id, :txn_id, :custom)
+        params.permit(
+          :payment_status,
+          :payment_gross,
+          :receiver_email,
+          :payer_email,
+          :mc_currency,
+          :tax,
+          :payer_id,
+          :txn_id,
+          :custom,
+          :address_city,
+          :address_state,
+          :address_zip,
+          :address_country_code,
+          :address_street,
+          :first_name,
+          :last_name,
+          :payer_business_name
+        )
       end
 
       def payment_is_valid?
@@ -95,41 +111,29 @@ module Spree
         ipn_params[:mc_currency] == "USD"
       end
 
-      def create_tax_adjustment
-        pp_request = merchant.build_get_transaction_details({
-          :TransactionID => ipn_params[:txn_id] })
+      def add_bill_address_from_ipn
+        address = {
+          firstname:  ipn_params[:first_name],
+          lastname:   ipn_params[:last_name],
+          address1:   ipn_params[:address_street],
+          city:       ipn_params[:address_city],
+          state_name: ipn_params[:address_state],
+          zipcode:    ipn_params[:address_zip],
+          country:    Spree::Country.find_by!(iso: ipn_params[:address_country_code] )
+        }
 
-        begin
-          @pp_response = merchant.get_transaction_details(pp_request)
-          if @pp_response.success?
-            logger.info "Payment TXN Details: #{@pp_response.PaymentTransactionDetails.inspect}"
-            payer_address = @pp_response.PaymentTransactionDetails.PayerInfo.Address
-            payer_name    = @pp_response.PaymentTransactionDetails.PayerInfo.PayerName
+        address[:state] = Spree::State.find_by!(abbr: ipn_params[:address_state] ) if address[:country].iso == 'US'
+        address[:company] = ipn_params[:payer_business_name] if ipn_params[:payer_business_name].present?
 
-            # Ugly, but can't validate with AR due to rollbacks on the entire order
-            if payer_address.CityName.presence && payer_address.PostalCode.presence && payer_address.Street1.presence && payer_name.FirstName.presence && payer_name.LastName.presence
+        @order.build_bill_address(address) unless has_blank? address
+      end
 
-              @order.build_bill_address({
-                city:      payer_address.try(:CityName), 
-                state:     Spree::State.find_by!(abbr: "IL"),
-                zipcode:   payer_address.try(:PostalCode), 
-                country:   Spree::Country.find_by!(iso: "US"),
-                firstname: payer_name.try(:FirstName),
-                lastname:  payer_name.try(:LastName),
-                address1:  payer_address.try(:Street1)
-              })
+      def has_blank? address
+        address.values.any?{|v| v.nil? || v.length == 0}
+      end
 
-              @order.create_tax_charge!
-              logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
-            else
-              logger.info "Invalid address - no adjustment applied"
-            end
-
-          else
-            logger.info "TXN Errors: #{@pp_response.Errors.inspect}"
-          end
-        rescue SocketError
-        end
+      def eligible_for_tax_charge?
+        ipn_params[:tax] != "0.00" && ipn_params[:address_state] == "IL" && @order.bill_address.present?
       end
 
   end
