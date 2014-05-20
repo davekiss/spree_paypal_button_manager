@@ -117,12 +117,16 @@ module Spree
           lastname:   ipn_params[:last_name],
           address1:   ipn_params[:address_street],
           city:       ipn_params[:address_city],
-          state_name: ipn_params[:address_state],
           zipcode:    ipn_params[:address_zip],
           country:    Spree::Country.find_by!(iso: ipn_params[:address_country_code] )
         }
 
-        address[:state] = Spree::State.find_by!(abbr: ipn_params[:address_state] ) if address[:country].iso == 'US'
+        if address[:country].iso == 'US'
+          address[:state] = Spree::State.find_by!(abbr: ipn_params[:address_state] )
+        else
+          address[:state_name] = ipn_params[:address_state].present? ? ipn_params[:address_state] : '-'
+        end
+
         address[:company] = ipn_params[:payer_business_name] if ipn_params[:payer_business_name].present?
 
         @order.build_bill_address(address) unless has_blank? address
