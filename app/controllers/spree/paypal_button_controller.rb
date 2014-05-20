@@ -138,7 +138,7 @@ module Spree
       end
 
       def has_blank? address
-        address.values.any?{|v| v.nil? || v.length == 0}
+        address.values.any?{|v| v.nil? || v == ''}
       end
 
       def eligible_for_tax_charge?
