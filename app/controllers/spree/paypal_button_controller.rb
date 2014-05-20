@@ -20,12 +20,20 @@ module Spree
         logger.info "IPN Params: #{ipn_params.inspect}"
         # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
+        logger.info "Order is #{@order.inspect}"
 
         if payment_is_valid?
           add_bill_address_from_ipn
+
+          logger.info "Eligible for Tax CHARGE????: #{eligible_for_tax_charge?}"
+
           @order.create_tax_charge! if eligible_for_tax_charge?
 
+          logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
+
           @order.email = ipn_params[:payer_email]
+
+          logger.info "Order EMAIL: #{@order.email}"
           @order.payments.create!({
             source: Spree::PaypalButtonCheckout.create({
               transaction_id: ipn_params[:txn_id],
@@ -133,7 +141,10 @@ module Spree
 
         address[:company] = ipn_params[:payer_business_name] if ipn_params[:payer_business_name].present?
 
+        logger.info "Address From IPN: #{address.inspect}"
+
         @order.build_bill_address(address) unless has_blank? address
+        logger.info "Blank in Address???: #{has_blank?(address)}"
       end
 
       def has_blank? address
