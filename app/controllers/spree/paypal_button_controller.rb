@@ -27,7 +27,7 @@ module Spree
 
           logger.info "Eligible for Tax CHARGE????: #{eligible_for_tax_charge?}"
 
-          @order.create_tax_charge! if eligible_for_tax_charge?
+          @order.create_tax_charge! && @order.update! if eligible_for_tax_charge?
 
           logger.info "Order Adjustments: #{@order.all_adjustments.inspect}"
 
