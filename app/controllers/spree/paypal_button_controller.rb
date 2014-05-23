@@ -137,7 +137,9 @@ module Spree
 
         address[:company] = ipn_params[:payer_business_name] if ipn_params[:payer_business_name].present?
 
-        @order.create_bill_address!(address) unless has_blank? address
+        unless @order.bill_address.present?
+          @order.create_bill_address!(address) unless has_blank? address
+        end
       end
 
       def has_blank? address
