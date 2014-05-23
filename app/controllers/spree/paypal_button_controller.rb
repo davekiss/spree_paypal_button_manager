@@ -25,12 +25,8 @@ module Spree
 
           add_bill_address_from_ipn
 
-          logger.info "===== Order Errors 1: #{@order.errors.inspect}"
-
           @order.create_tax_charge! if eligible_for_tax_charge?
-          logger.info "===== Order Errors 2: #{@order.errors.inspect}"
           @order.update!
-          logger.info "===== Order Errors 3: #{@order.errors.inspect}"
           @order.email = ipn_params[:payer_email]
 
           @order.payments.create!({
@@ -42,14 +38,7 @@ module Spree
             payment_method: payment_method
           })
 
-          logger.info "===== PAYMENT Errors: #{@order.payments.first.errors}"
-          logger.info "===== Order Errors 4: #{@order.errors.inspect}"
-          logger.info "===== Order Bill Address: #{@order.bill_address.inspect}"
-          logger.info "===== Order Tax Address: #{@order.tax_address.inspect}"
           @order.next
-          logger.info "===== PAYMENT Errors 2: #{@order.payments.first.errors}"
-          logger.info "===== Order Tax Address 2: #{@order.tax_address.inspect}"
-          logger.info "===== Order Errors 5: #{@order.errors.inspect}"
         end
       else
         # log for inspection
