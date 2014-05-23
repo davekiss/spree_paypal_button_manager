@@ -15,24 +15,18 @@ module Spree
     end
 
     def notify
-      logger.info "Raw Request: #{request.raw_post.inspect}"
       if provider.ipn_valid?(request.raw_post)
+
         logger.info "IPN Params: #{ipn_params.inspect}"
         # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
-        logger.info "Order is #{@order.inspect}"
 
         if payment_is_valid?
+
           add_bill_address_from_ipn
 
-          logger.info "Eligible for Tax CHARGE????: #{eligible_for_tax_charge?}"
-          logger.info "Order is #{@order.inspect}"
-          logger.info "Bill Address is #{@order.bill_address.inspect}"
-
-          @order.create_tax_charge! && @order.update! if eligible_for_tax_charge?
-
-          logger.info "Order secondly is #{@order.inspect}"
-
+          @order.create_tax_charge! if eligible_for_tax_charge?
+          @order.update!
           @order.email = ipn_params[:payer_email]
 
           @order.payments.create!({
@@ -44,12 +38,7 @@ module Spree
             payment_method: payment_method
           })
 
-          logger.info "Order thirdly is #{@order.inspect}"
-
-          logger.info "Order Payments: #{@order.payments.inspect}"
           @order.next
-          logger.info "=====NEXT STEP====="
-          logger.info "Order is now #{@order.inspect}"
         end
       else
         # log for inspection
