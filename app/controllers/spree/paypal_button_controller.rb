@@ -21,24 +21,26 @@ module Spree
         # Get Order from Custom passed param
         @order = Spree::Order.find_by!(number: ipn_params[:custom])
 
-        if payment_is_valid?
+        if is_completed?
+          if payment_is_valid?
 
-          add_bill_address_from_ipn
+            add_bill_address_from_ipn
 
-          @order.create_tax_charge! if eligible_for_tax_charge?
-          @order.update!
-          @order.email = ipn_params[:payer_email]
+            @order.create_tax_charge! if eligible_for_tax_charge?
+            @order.update!
+            @order.email = ipn_params[:payer_email]
 
-          @order.payments.create!({
-            source: Spree::PaypalButtonCheckout.create({
-              transaction_id: ipn_params[:txn_id],
-              payer_id: ipn_params[:payer_id]
-            }),
-            amount: @order.total,
-            payment_method: payment_method
-          })
+            @order.payments.create!({
+              source: Spree::PaypalButtonCheckout.create({
+                transaction_id: ipn_params[:txn_id],
+                payer_id: ipn_params[:payer_id]
+              }),
+              amount: @order.total,
+              payment_method: payment_method
+            })
 
-          @order.next
+            @order.next
+          end 
         end
       else
         # log for inspection
@@ -96,7 +98,7 @@ module Spree
         logger.info "is_correct_amount? #{is_correct_amount?}"
         logger.info "is_correct_business? #{is_correct_business?}"
         logger.info "is_correct_currency? #{is_correct_currency?}"
-        is_completed? && is_correct_amount? && is_correct_business? && is_correct_currency?
+        is_correct_amount? && is_correct_business? && is_correct_currency?
       end
 
       def is_completed?
