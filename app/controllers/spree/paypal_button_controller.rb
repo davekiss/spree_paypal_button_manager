@@ -3,14 +3,16 @@ module Spree
     skip_before_action :verify_authenticity_token
 
     def confirm
-      order = Spree::Order.find_by!(number: ipn_params[:custom])
-      if order.completed?
-        session[:order_id] = nil
-        flash.notice = Spree.t(:order_processed_successfully)
-        flash[:commerce_tracking] = "nothing special"
-        redirect_to order_path(order, :token => order.token)
-      else
-        redirect_to checkout_state_path(order.state)
+      begin
+        order = Spree::Order.find_by!(guest_token: cookies.signed[:guest_token])
+        if order.completed?
+          cookies.signed[:guest_token] = nil
+          flash.notice = Spree.t(:order_processed_successfully)
+          flash[:commerce_tracking] = "nothing special"
+          redirect_to order_path(order, :token => order.guest_token)
+        end
+      rescue ActiveRecord::RecordNotFound
+        redirect_to root_path
       end
     end
 
@@ -40,7 +42,7 @@ module Spree
             })
 
             @order.next
-          end 
+          end
         end
       else
         # log for inspection

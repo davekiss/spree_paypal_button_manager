@@ -14,6 +14,7 @@ Spree::CheckoutController.class_eval do
         :ButtonImageURL => "https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-large.png",
         :ButtonVar  => [
           "return=" + confirm_paypal_url(:payment_method_id => payment_method.id, :utm_nooverride => 1),
+          "rm=1",
           "cancel_return=" + cancel_paypal_url,
           "notify_url=" + notify_paypal_url,
           #"notify_url=http://requestb.in/1axq1gl1",
