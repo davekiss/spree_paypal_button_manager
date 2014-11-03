@@ -11,7 +11,7 @@ Spree::CheckoutController.class_eval do
         :ButtonCode     => "ENCRYPTED",
         :ButtonSubType  => "PRODUCTS",
         :ButtonCountry  => "US",
-        :ButtonImageURL => "https://www.paypalobjects.com/webstatic/en_US/i/buttons/checkout-logo-large.png",
+        :ButtonImageURL => button_image_url,
         :ButtonVar  => [
           "return=" + confirm_paypal_url(:payment_method_id => payment_method.id, :utm_nooverride => 1),
           "rm=1",
@@ -40,6 +40,10 @@ Spree::CheckoutController.class_eval do
       rescue SocketError
         flash[:error] = "Could not connect to PayPal."
       end
+    end
+
+    def button_image_url
+      Rails.env.development? ? 'http://i.imgur.com/UTEy7IZ.png' : view_context.image_url('spree/frontend/pay-with-paypal.png')
     end
 
     def payment_method
