@@ -38,7 +38,8 @@ module Spree
                 payer_id: ipn_params[:payer_id]
               }),
               amount: @order.total,
-              payment_method: payment_method
+              payment_method: payment_method,
+              response_code: ipn_params[:txn_id]
             })
 
             @order.next
