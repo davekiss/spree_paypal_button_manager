@@ -30,7 +30,7 @@ module Spree
 
             @order.create_tax_charge! if eligible_for_tax_charge?
             @order.update!
-            @order.email = ipn_params[:payer_email]
+            @order.email = ipn_params[:payer_email] unless @order.email.present?
 
             @order.payments.create!({
               source: Spree::PaypalButtonCheckout.create({
