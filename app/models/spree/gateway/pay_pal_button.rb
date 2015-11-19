@@ -66,15 +66,18 @@ module Spree
         :RefundType        => refund_type,
         :RefundSource      => "any",
         :Memo              => event[:originator].reason.name,
-        :RefundItemDetails => refund_items(reimbursement),
         :MsgSubID => ('a'..'z').to_a.shuffle[0,8].join
       }
+
+      if reimbursement.present?
+        transaction[:RefundItemDetails] = refund_items(reimbursement)
+      end
 
       # Only set refund amount if partial transaction
       if refund_type == "Partial"
         transaction[:Amount] = {
           :currencyID => payment.currency,
-          :value      => '%.2f' % reimbursement.total
+          :value      => '%.2f' % (credit_cents / 100)
         }
       end
 
