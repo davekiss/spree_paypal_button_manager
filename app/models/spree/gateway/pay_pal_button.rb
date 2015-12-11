@@ -109,9 +109,12 @@ module Spree
       end
 
       # https://github.com/activemerchant/active_merchant/blob/86e84518d591bc9435b86e6505c509be822960c0/lib/active_merchant/billing/response.rb
+      # :authorization will be nil if refund failed, or string if succeeded
       return ActiveMerchant::Billing::Response.new(
         refund_transaction_response.success?,
-        refund_transaction_response.errors.map(&:long_message).join(" ")
+        refund_transaction_response.errors.map(&:long_message).join(" "),
+        {},
+        { :authorization => refund_transaction_response.RefundTransactionID }
       )
     end
 
