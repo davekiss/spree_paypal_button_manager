@@ -109,7 +109,8 @@ module Spree
       end
 
       def is_correct_amount?
-        ( BigDecimal.new( ipn_params[:payment_gross] ) - BigDecimal( ipn_params[:tax] ) ) == @order.total
+        tax = ipn_params[:tax].nil? ? BigDecimal(0) : BigDecimal( ipn_params[:tax] )
+        ( BigDecimal.new( ipn_params[:payment_gross] ) - tax ) == @order.total
       end
 
       def is_correct_business?
